@@ -1,6 +1,8 @@
 ![AutomanTools](https://automan.ai/static/img/labeling_img.png)
 AutomanTools is an open-source software for self-driving AI.
 
+[![CircleCI](https://circleci.com/gh/eratostennis/AutomanTools.svg?style=svg)](https://circleci.com/gh/eratostennis/AutomanTools)
+
 
 ## Features
 * Extract images and point clouds from ROSBAG file
