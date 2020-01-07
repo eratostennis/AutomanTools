@@ -72,8 +72,9 @@ def frame(request, project_id, annotation_id, frame):
     if request.method == 'GET':
         if not Permission.hasPermission(user_id, 'get_label', project_id):
             raise PermissionDenied
+        try_lock = (request.GET.get(key='try_lock') == 'true')
         labels = annotation_manager.get_frame_labels(
-            project_id, annotation_id, frame)
+            project_id, user_id, try_lock, annotation_id, frame)
         return HttpResponse(content=json.dumps(labels), status=200, content_type='application/json')
 
     else:
@@ -96,3 +97,27 @@ def download_archived_annotation(request, project_id, annotation_id):
     archive_path = annotation_manager.get_archive_path(annotation_id)
     archive = open(archive_path, "rb").read()
     return HttpResponse(archive, content_type="application/octet-stream")
+
+
+@api_view(['GET'])
+def instances(request, project_id, annotation_id):
+    annotation_manager = AnnotationManager()
+    contents = annotation_manager.get_instances(annotation_id)
+    return HttpResponse(content=json.dumps(contents), status=200, content_type='application/json')
+
+@api_view(['GET'])
+def instance(request, project_id, annotation_id, instance_id):
+    annotation_manager = AnnotationManager()
+    contents = annotation_manager.get_instance(annotation_id, instance_id)
+    return HttpResponse(content=json.dumps(contents), status=200, content_type='application/json')
+
+
+@api_view(['DELETE'])
+def unlock(request, project_id, annotation_id):
+    username = request.user
+    user_id = AccountManager.get_id_by_username(username)
+    annotation_manager = AnnotationManager()
+    is_ok = annotation_manager.release_lock(user_id, annotation_id)
+    if is_ok:
+        return HttpResponse(status=204)
+    return HttpResponse(status=404)
